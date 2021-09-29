@@ -9,12 +9,21 @@ using System.Xml.Linq;
 
 namespace TestProjectSOLID
 {
+    /*
+     * Запись в БД информации о котировках
+     * На входе XML файл, который парсится и дата, на которую необходимо проверить котировку
+     * Также проверка на существование котировки на выбранную дату в БД
+     * Если такая котировка за указанную дату существует, то данные по котировке валюты обновляются
+     * Иначе просто добавляется котировка за выбранную дату
+     */
     class WriteRateSQL
     {
         private string XmlFileString { get; set; }
         private string Date { get; set; }
         private string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
         private DataContext db;
+
+        public bool flagException = false;
 
         public WriteRateSQL(string xmlFileString, string date)
         {
@@ -24,18 +33,26 @@ namespace TestProjectSOLID
 
         public void ToWriteRateNewDate()
         {
-            db = new DataContext(connectionString);
-            XDocument xDoc = XDocument.Parse(XmlFileString);
-            foreach (XElement element in xDoc.Element("ValCurs").Elements("Valute"))
+            try
             {
-                if (!IsExistRateInThisDate(element))
+                db = new DataContext(connectionString);
+                XDocument xDoc = XDocument.Parse(XmlFileString);
+                foreach (XElement element in xDoc.Element("ValCurs").Elements("Valute"))
                 {
-                    ToAddNewRateOnThisDate(element);
-                } else
-                {
-                    ToUpdateRateOnThisDate(element);
+                    if (!IsExistRateInThisDate(element))
+                    {
+                        ToAddNewRateOnThisDate(element);
+                    }
+                    else
+                    {
+                        ToUpdateRateOnThisDate(element);
+                    }
                 }
+            } catch
+            {
+                flagException = true;
             }
+            
         }
 
         private bool IsExistRateInThisDate(XElement element)
@@ -64,7 +81,7 @@ namespace TestProjectSOLID
 
         private void ToUpdateRateOnThisDate(XElement element)
         {
-            IEnumerable<Rate> rates = db.ExecuteQuery<Rate>("SELECT r.RateID, r.CurrencyID, r.Date, r.Nominal, r.Value " +
+            IEnumerable<Rate> rates = db.ExecuteQuery<Rate>("SELECT c.ID, r.RateID, r.CurrencyID, r.Date, r.Nominal, r.Value " +
                 "FROM Currency c join Rate r on c.CurrencyID = r.CurrencyID " +
                 "WHERE convert(char, r.Date, 104) = {0} and c.CharCode = {1}", Date, element.Element("CharCode").Value.ToString());
             Rate rate = rates.FirstOrDefault();

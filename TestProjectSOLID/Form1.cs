@@ -25,52 +25,45 @@ namespace TestProjectSOLID
 
         private void GetCurrencyRateBtn_Click(object sender, EventArgs e)
         {
-
-            var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Лист1");
-
-            //создадим заголовки у столбцов
-            worksheet.Cell("A" + 1).Value = "Имя";
-            worksheet.Cell("B" + 1).Value = "Фамиля";
-            worksheet.Cell("C" + 1).Value = "Отчество";
-            worksheet.Cell("D" + 1).Value = "Возраст";
-
-            // 
-
-            worksheet.Cell("A" + 2).Value = "Иван";
-            worksheet.Cell("B" + 2).Value = "Иванов";
-            worksheet.Cell("C" + 2).Value = "Иванович";
-            worksheet.Cell("D" + 2).Value = 18;
-            //пример изменения стиля ячейки
-            worksheet.Cell("B" + 2).Style.Fill.BackgroundColor = XLColor.Red;
-
-            // пример создания сетки в диапазоне
-            var rngTable = worksheet.Range("A1:G" + 10);
-            rngTable.Style.Border.RightBorder = XLBorderStyleValues.Thin;
-            rngTable.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
-
-            worksheet.Columns().AdjustToContents(); //ширина столбца по содержимому
-
-            workbook.SaveAs("Report.xlsx");
-
-
-            /*string date = DateSearch.Value.ToShortDateString();
+            string date = DateSearch.Value.ToShortDateString();
             GetXMLFile getXML = new GetXMLFile(date);
             string xmlFileStr = getXML.ToGetXMLFile();
+
+            if (xmlFileStr == "-1")
+            {
+                MessageBox.Show("Произошла ошибка во время получения файла с ресурса");
+                return;
+            }
 
             WriteCurrencySQL writeCurrencySQL = new WriteCurrencySQL(xmlFileStr);
             writeCurrencySQL.ToWriteCurrency();
             if (!writeCurrencySQL.flagExist)
             {
-                // Вывод на экран, что на введённую дату нет данных
+                MessageBox.Show("На выбранную дату нет данных!");
                 return;
             } else
             {
+                if (writeCurrencySQL.flagException)
+                {
+                    MessageBox.Show("Возникла ошибка во время записи валют в базу данных!");
+                    return;
+                }
                 WriteRateSQL writeRateSQL = new WriteRateSQL(xmlFileStr, date);
                 writeRateSQL.ToWriteRateNewDate();
-            }*/
-
-
+                if (writeRateSQL.flagException)
+                {
+                    MessageBox.Show("Возникла ошибка во время записи котировок в базу данных!");
+                    return;
+                }
+                
+                ReportExcel report = new ReportExcel(date);
+                report.ToReportExcelFile();
+                if (report.flagException)
+                {
+                    MessageBox.Show("Возникла ошибка во время создания Excel файла!");
+                    return;
+                }
+            }
         }
     }
 }

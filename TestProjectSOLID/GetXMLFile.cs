@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 
 namespace TestProjectSOLID
 {
+    /*
+     * Класс предназначен для получения с технического ресурса XML файла на выбранную дату
+     * На входе выбранная дата
+     * На выходе XML файл
+     */
     class GetXMLFile
     {
         private string Date { get; set; }
@@ -18,21 +23,28 @@ namespace TestProjectSOLID
 
         public string ToGetXMLFile()
         {
-            string url1 = "http://www.cbr.ru/scripts/XML_daily.asp?date_req=" + Date;
-            var webhost = WebRequest.CreateHttp(url1);
-            string strResp;
-            using (WebResponse req = webhost.GetResponse())
+            try
             {
-                using (Stream stream = req.GetResponseStream())
+                string url1 = "http://www.cbr.ru/scripts/XML_daily.asp?date_req=" + Date;
+                var webhost = WebRequest.CreateHttp(url1);
+                string strResp;
+                using (WebResponse req = webhost.GetResponse())
                 {
-                    using (StreamReader sReader = new StreamReader(stream, Encoding.Default))
+                    using (Stream stream = req.GetResponseStream())
                     {
-                        strResp = sReader.ReadToEnd();
+                        using (StreamReader sReader = new StreamReader(stream, Encoding.Default))
+                        {
+                            strResp = sReader.ReadToEnd();
+                        }
                     }
                 }
-            }
 
-            return strResp;
+                return strResp;
+            } catch
+            {
+                return "-1";
+            }
+            
         }
     }
 }

@@ -9,6 +9,13 @@ using System.Xml.Linq;
 
 namespace TestProjectSOLID
 {
+    /*
+     * Запись в БД информации о валюте
+     * На входе XML файл, который парсится
+     * Также проверка на существование валюты в БД
+     * Если такая валюта есть, то ничего не делается
+     * Иначе валюта записывается в БД
+     */
     class WriteCurrencySQL
     {
         private string XmlFileString { get; set; }
@@ -18,6 +25,7 @@ namespace TestProjectSOLID
 
 
         public bool flagExist = false;
+        public bool flagException = false;
         
         public WriteCurrencySQL(string xmlFileString)
         {
@@ -26,17 +34,24 @@ namespace TestProjectSOLID
 
         public void ToWriteCurrency()
         {
-            db = new DataContext(connectionString);
-            currencies = db.GetTable<Currency>();
-            XDocument xDoc = XDocument.Parse(XmlFileString);
-            foreach (XElement element in xDoc.Element("ValCurs").Elements("Valute"))
+            try
             {
-                flagExist = true;
-                if (!IsExistCurrency(element.Element("CharCode").Value.ToString()))
+                db = new DataContext(connectionString);
+                currencies = db.GetTable<Currency>();
+                XDocument xDoc = XDocument.Parse(XmlFileString);
+                foreach (XElement element in xDoc.Element("ValCurs").Elements("Valute"))
                 {
-                    ToAddNewCurrency(element);
+                    flagExist = true;
+                    if (!IsExistCurrency(element.Element("CharCode").Value.ToString()))
+                    {
+                        ToAddNewCurrency(element);
+                    }
                 }
+            } catch
+            {
+                flagException = true;
             }
+           
         }
 
         private bool IsExistCurrency(string charCode)

@@ -7,6 +7,9 @@ using System.Data.Linq.Mapping;
 
 namespace TestProjectSOLID
 {
+    /*
+     * Класс описывает таблицу Currency в БД
+     */
     [Table]
     class Currency
     {
