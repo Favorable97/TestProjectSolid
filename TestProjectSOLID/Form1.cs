@@ -63,6 +63,10 @@ namespace TestProjectSOLID
                     MessageBox.Show("Возникла ошибка во время создания Excel файла!");
                     return;
                 }
+                else
+                {
+                    MessageBox.Show("Файл сформирован");
+                }
             }
         }
     }
